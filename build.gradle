@@ -1,0 +1,73 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'maven-publish'
+}
+
+group = 'com.lbg.cpt'
+version = '1.0.1'
+description = 'cpt-test-sharedlib'
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    maven {
+        url 'https://nexus.mgmt-bld.oncp.dev/repository/maven-public/'
+    }
+    maven {
+        url = "https://nexus.mgmt-bld.oncp.dev/repository/maven-central/"
+    }
+    maven {
+        url 'https://nexus.sbs-bld.oncp.dev/repository/shared-services/'
+    }
+}
+
+application {
+    mainClassName = 'com.lbg.cpt.cpt-test-sharedlib'
+}
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes 'Main-Class': 'com.lbg.cpt.cpt-test-sharedlib'
+
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "cloudNexus"
+            url = "https://nexus.sbs-bld.oncp.dev/repository/sbs-cpt/"
+            credentials {
+                username = 'sbs-cpt-admin'
+                password = 'Nexus@123'
+            }
+        }
+
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            from(components.java)
+            groupId 'com.lbg.cpt'
+            artifactId 'cpt-test-sharedlib'
+        }
+    }
+
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
